@@ -1,0 +1,26 @@
+---
+description: Fullstack layered architecture and coding standards
+alwaysApply: true
+---
+
+# Fullstack Monorepo Standards
+
+## Architecture
+
+- Follow layered architecture on backend: routes -> controllers -> services -> models.
+- Keep routes focused on routing, validation, and middleware wiring only.
+- Never place business logic in routes.
+- Keep controllers thin: parse request input, call services, and shape HTTP responses.
+- Keep business rules in services; keep data access concerns in models.
+
+## Implementation Practices
+
+- Use async/await consistently for asynchronous flows.
+- Use TypeScript types everywhere on the backend (request contracts, service inputs/outputs, and model-level interfaces/types).
+- Prefer simple, readable solutions over complex abstractions.
+- Do not introduce new libraries unless they are clearly necessary and justified.
+
+## Frontend State
+
+- Keep frontend state local by default.
+- Only lift state or introduce shared/global state when explicitly required by the feature.
