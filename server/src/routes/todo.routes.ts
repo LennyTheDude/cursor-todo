@@ -6,8 +6,11 @@ import {
   getTodosController,
   updateTodoController,
 } from '../controllers/todo.controller';
+import { authMiddleware } from '../middleware/auth.middleware';
 
 const todoRouter = Router();
+
+todoRouter.use(authMiddleware);
 
 todoRouter.get('/', getTodosController);
 todoRouter.get('/:id', getTodoByIdController);

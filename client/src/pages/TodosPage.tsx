@@ -12,7 +12,11 @@ import TodoList from '../components/TodoList'
 
 const PAGE_LIMIT = 5
 
-function TodosPage() {
+type TodosPageProps = {
+  onLogout: () => void
+}
+
+function TodosPage({ onLogout }: TodosPageProps) {
   const [todosData, setTodosData] = useState<PaginatedTodos>({
     items: [],
     total: 0,
@@ -101,7 +105,12 @@ function TodosPage() {
 
   return (
     <main className="todo-page">
-      <h1>To-Do App</h1>
+      <div className="todo-header">
+        <h1>To-Do App</h1>
+        <button type="button" onClick={onLogout}>
+          Logout
+        </button>
+      </div>
       <TodoForm onSubmit={handleCreate} isSubmitting={isSubmitting} />
       {errorMessage && <p className="error">{errorMessage}</p>}
       {isLoading ? (

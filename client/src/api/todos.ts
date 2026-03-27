@@ -1,4 +1,5 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000';
+import { getToken } from '../auth/token';
 
 export type Todo = {
   _id: string;
@@ -51,15 +52,32 @@ const parseResponse = async <T>(response: Response): Promise<T> => {
   return (await response.json()) as T;
 };
 
+const buildAuthHeaders = (includeJson = false): HeadersInit => {
+  const token = getToken();
+  const headers: Record<string, string> = {};
+
+  if (includeJson) {
+    headers['Content-Type'] = 'application/json';
+  }
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  return headers;
+};
+
 export const getTodos = async (page = 1, limit = 10): Promise<PaginatedTodos> => {
-  const response = await fetch(`${API_BASE_URL}/todos?page=${page}&limit=${limit}`);
+  const response = await fetch(`${API_BASE_URL}/todos?page=${page}&limit=${limit}`, {
+    headers: buildAuthHeaders(),
+  });
   return parseResponse<PaginatedTodos>(response);
 };
 
 export const createTodo = async (data: CreateTodoInput): Promise<Todo> => {
   const response = await fetch(`${API_BASE_URL}/todos`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: buildAuthHeaders(true),
     body: JSON.stringify(data),
   });
 
@@ -69,7 +87,7 @@ export const createTodo = async (data: CreateTodoInput): Promise<Todo> => {
 export const updateTodo = async (id: string, data: UpdateTodoInput): Promise<Todo> => {
   const response = await fetch(`${API_BASE_URL}/todos/${id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: buildAuthHeaders(true),
     body: JSON.stringify(data),
   });
 
@@ -79,6 +97,7 @@ export const updateTodo = async (id: string, data: UpdateTodoInput): Promise<Tod
 export const deleteTodo = async (id: string): Promise<void> => {
   const response = await fetch(`${API_BASE_URL}/todos/${id}`, {
     method: 'DELETE',
+    headers: buildAuthHeaders(),
   });
 
   await parseResponse<void>(response);

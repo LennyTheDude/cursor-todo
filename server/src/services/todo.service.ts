@@ -1,6 +1,7 @@
 import { Todo, TodoModel } from '../models/todo.model';
 
 export type PaginationParams = {
+  userId: string;
   page: number;
   limit: number;
 };
@@ -14,6 +15,7 @@ export type PaginatedTodos = {
 };
 
 export type CreateTodoInput = {
+  userId: string;
   title: string;
   description?: string;
 };
@@ -25,14 +27,16 @@ export type UpdateTodoInput = {
 };
 
 export const listTodos = async ({
+  userId,
   page,
   limit,
 }: PaginationParams): Promise<PaginatedTodos> => {
   const skip = (page - 1) * limit;
+  const filter = { userId };
 
   const [items, total] = await Promise.all([
-    TodoModel.find().sort({ createdAt: -1 }).skip(skip).limit(limit).lean<Todo[]>(),
-    TodoModel.countDocuments(),
+    TodoModel.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean<Todo[]>(),
+    TodoModel.countDocuments(filter),
   ]);
 
   return {
@@ -44,12 +48,13 @@ export const listTodos = async ({
   };
 };
 
-export const getTodoById = async (id: string): Promise<Todo | null> => {
-  return TodoModel.findById(id).lean<Todo | null>();
+export const getTodoById = async (id: string, userId: string): Promise<Todo | null> => {
+  return TodoModel.findOne({ _id: id, userId }).lean<Todo | null>();
 };
 
 export const createTodo = async (data: CreateTodoInput): Promise<Todo> => {
   const todo = await TodoModel.create({
+    userId: data.userId,
     title: data.title,
     description: data.description ?? '',
   });
@@ -59,6 +64,7 @@ export const createTodo = async (data: CreateTodoInput): Promise<Todo> => {
 
 export const updateTodo = async (
   id: string,
+  userId: string,
   data: UpdateTodoInput,
 ): Promise<Todo | null> => {
   const update: Partial<Pick<Todo, 'title' | 'description' | 'completed'>> = {};
@@ -75,9 +81,9 @@ export const updateTodo = async (
     update.completed = data.completed;
   }
 
-  return TodoModel.findByIdAndUpdate(id, update, { new: true }).lean<Todo | null>();
+  return TodoModel.findOneAndUpdate({ _id: id, userId }, update, { new: true }).lean<Todo | null>();
 };
 
-export const deleteTodo = async (id: string): Promise<Todo | null> => {
-  return TodoModel.findByIdAndDelete(id).lean<Todo | null>();
+export const deleteTodo = async (id: string, userId: string): Promise<Todo | null> => {
+  return TodoModel.findOneAndDelete({ _id: id, userId }).lean<Todo | null>();
 };
